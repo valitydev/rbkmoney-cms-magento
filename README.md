@@ -1,0 +1,1 @@
+# rbkmoney-cms-magento
