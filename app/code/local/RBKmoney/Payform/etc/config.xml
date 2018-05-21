@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<config>
+	<modules>
+		<RBKmoney_Payform>
+			<version>1.0.0.0</version>
+		</RBKmoney_Payform>
+	</modules>
+
+	<global>
+		<helpers>
+			<payform>
+				<class>RBKmoney_Payform_Helper</class>
+			</payform>
+		</helpers>
+
+		<blocks>
+			<payform>
+				<class>RBKmoney_Payform_Block</class>
+			</payform>
+		</blocks>
+
+		<models>
+			<payform>
+				<class>RBKmoney_Payform_Model</class>
+			</payform>
+		</models>
+
+		<resources>
+			<payform_setup>
+				<setup>
+					<module>RBKmoney_Payform</module>
+				</setup>
+			</payform_setup>
+		</resources>
+	</global>
+
+	<default>
+		<payment>
+			<payform>
+				<active>1</active>
+				<model>payform/paymentmethod</model>
+				<order_status>pending</order_status>
+				<title>RBKmoney</title>
+				<allowspecific>0</allowspecific>
+				<payment_action>sale</payment_action>
+				<shop_id>1</shop_id>
+				<payment_form_logo></payment_form_logo>
+				<payment_form_company_name></payment_form_company_name>
+				<payment_form_button_label></payment_form_button_label>
+				<payment_form_description></payment_form_description>
+				<payment_form_css_button></payment_form_css_button>
+				<private_key></private_key>
+				<callback_public_key></callback_public_key>
+				<notification_url>http{s}://{your-site}/rbkmoney/payment/notification</notification_url>
+				<debug>0</debug>
+			</payform>
+		</payment>
+	</default>
+
+	<frontend>
+		<routers>
+			<payform>
+				<use>standard</use>
+				<args>
+					<module>RBKmoney_Payform</module>
+					<frontName>rbkmoney</frontName>
+				</args>
+			</payform>
+		</routers>
+	</frontend>
+</config>

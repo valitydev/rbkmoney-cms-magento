@@ -1,0 +1,45 @@
+<?php
+$order = new Mage_Sales_Model_Order();
+$orderId = Mage::getSingleton('checkout/session')->getLastRealOrderId();
+$order->loadByIncrementId($orderId);
+
+
+/*** @var RBKmoney_Payform_Helper_Data $data */
+$data = Mage::helper("payform");
+
+$dataLogo = !empty($data->getPaymentFormLogo()) ? 'data-logo="' . $data->getPaymentFormLogo() . '"' : '';
+$companyName = !empty($data->getPaymentFormCompanyName()) ? 'data-name="' . $data->getPaymentFormCompanyName() . '"' : '';
+$buttonLabel = !empty($data->getPaymentFormButtonLabel()) ? 'data-label="' . $data->getPaymentFormButtonLabel() . '"' : '';
+$description = !empty($data->getPaymentFormDescription()) ? 'data-description="' . $data->getPaymentFormDescription() . '"' : '';
+
+$style = !empty($data->getPaymentFormCssButton()) ? '<style>' . $data->getPaymentFormCssButton() . '</style>' : '';
+
+try {
+    if(empty($_SESSION['order']) || $_SESSION['order']['id'] != $orderId) {
+        $invoice_id = $data->createInvoice($order);
+        $_SESSION['order']['id'] = $orderId;
+        $_SESSION['order']['invoice_id'] = $invoice_id;
+    } else {
+        $invoice_id = $_SESSION['order']['invoice_id'];
+    }
+
+    $invoice_access_token = $data->createInvoiceAccessToken($invoice_id);
+} catch (Exception $ex) {
+    die($ex->getMessage());
+}
+?>
+<h2><?php echo $this->__('RBKmoney payment') ?></h2>
+
+<?php echo $style; ?>
+
+<form action="<?php echo $data->getSuccessUrl(); ?>" method="POST">
+    <script src="<?php echo $data::PAYMENT_FORM_URL; ?>" class="rbkmoney-checkout"
+        data-invoice-id="<?php echo $invoice_id; ?>"
+        data-invoice-access-token="<?php echo $invoice_access_token; ?>"
+        <?php echo $dataLogo; ?>
+        <?php echo $companyName; ?>
+        <?php echo $buttonLabel; ?>
+        <?php echo $description; ?>
+    >
+    </script>
+</form>
