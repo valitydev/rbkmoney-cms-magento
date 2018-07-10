@@ -7,23 +7,33 @@ $order->loadByIncrementId($orderId);
 /*** @var RBKmoney_Payform_Helper_Data $data */
 $data = Mage::helper("payform");
 
-$dataLogo = !empty($data->getPaymentFormLogo()) ? 'data-logo="' . $data->getPaymentFormLogo() . '"' : '';
-$companyName = !empty($data->getPaymentFormCompanyName()) ? 'data-name="' . $data->getPaymentFormCompanyName() . '"' : '';
-$buttonLabel = !empty($data->getPaymentFormButtonLabel()) ? 'data-label="' . $data->getPaymentFormButtonLabel() . '"' : '';
-$description = !empty($data->getPaymentFormDescription()) ? 'data-description="' . $data->getPaymentFormDescription() . '"' : '';
+$paymentFormCompanyName = $data->getPaymentFormCompanyName();
+$companyName = !empty($paymentFormCompanyName) ? 'data-name="' . $paymentFormCompanyName . '"' : '';
 
-$style = !empty($data->getPaymentFormCssButton()) ? '<style>' . $data->getPaymentFormCssButton() . '</style>' : '';
+$paymentFormButtonLabel = $data->getPaymentFormButtonLabel();
+$buttonLabel = !empty($paymentFormButtonLabel) ? 'data-label="' . $paymentFormButtonLabel . '"' : '';
+
+$paymentFormDescription = $data->getPaymentFormDescription();
+$description = !empty($paymentFormDescription) ? 'data-description="' . $paymentFormDescription . '"' : '';
+
+$paymentFormCssButton = $data->getPaymentFormCssButton();
+$style = !empty($paymentFormCssButton) ? '<style>' . $paymentFormCssButton . '</style>' : '';
 
 try {
     if(empty($_SESSION['order']) || $_SESSION['order']['id'] != $orderId) {
-        $invoice_id = $data->createInvoice($order);
+        $response = $data->createInvoice($order);
+
+        $invoice_id = $response["invoice"]["id"];
+        $invoice_access_token = $response["invoiceAccessToken"]["payload"];
+
         $_SESSION['order']['id'] = $orderId;
         $_SESSION['order']['invoice_id'] = $invoice_id;
+        $_SESSION['order']['invoiceAccessToken'] = $invoice_access_token;
     } else {
         $invoice_id = $_SESSION['order']['invoice_id'];
+        $invoice_access_token = $_SESSION['order']['invoiceAccessToken'];
     }
 
-    $invoice_access_token = $data->createInvoiceAccessToken($invoice_id);
 } catch (Exception $ex) {
     die($ex->getMessage());
 }
@@ -34,9 +44,8 @@ try {
 
 <form action="<?php echo $data->getSuccessUrl(); ?>" method="POST">
     <script src="<?php echo $data::PAYMENT_FORM_URL; ?>" class="rbkmoney-checkout"
-        data-invoice-id="<?php echo $invoice_id; ?>"
-        data-invoice-access-token="<?php echo $invoice_access_token; ?>"
-        <?php echo $dataLogo; ?>
+            data-invoice-id="<?php echo $invoice_id; ?>"
+            data-invoice-access-token="<?php echo $invoice_access_token; ?>"
         <?php echo $companyName; ?>
         <?php echo $buttonLabel; ?>
         <?php echo $description; ?>

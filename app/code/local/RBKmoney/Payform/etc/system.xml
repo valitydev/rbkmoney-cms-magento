@@ -14,7 +14,7 @@
                     <frontend_class>complex</frontend_class>
                     <frontend_model>payform/adminhtml_system_config_fieldset_group</frontend_model>
                     <comment>Process payments using your own internet merchant account.</comment>
-                    <help_url>https://rbkmoney.github.io/docs/</help_url>
+                    <help_url>https://developer.rbk.money/docs/</help_url>
                     <fields>
                         <title translate="label">
                             <label>Title</label>
@@ -92,14 +92,6 @@
                             <show_in_store>0</show_in_store>
                             <sort_order>8</sort_order>
                         </payment_form_css_button>
-                        <payment_form_logo translate="label">
-                            <label>Logo in payment form:</label>
-                            <frontend_type>text</frontend_type>
-                            <show_in_default>1</show_in_default>
-                            <show_in_website>1</show_in_website>
-                            <show_in_store>0</show_in_store>
-                            <sort_order>9</sort_order>
-                        </payment_form_logo>
                         <payment_form_company_name translate="label">
                             <label>Company name in payment form:</label>
                             <frontend_type>text</frontend_type>

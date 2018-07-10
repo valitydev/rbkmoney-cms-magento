@@ -43,8 +43,7 @@
 				<title>RBKmoney</title>
 				<allowspecific>0</allowspecific>
 				<payment_action>sale</payment_action>
-				<shop_id>1</shop_id>
-				<payment_form_logo></payment_form_logo>
+				<shop_id>TEST</shop_id>
 				<payment_form_company_name></payment_form_company_name>
 				<payment_form_button_label></payment_form_button_label>
 				<payment_form_description></payment_form_description>

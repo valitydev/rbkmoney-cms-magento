@@ -1,11 +1,6 @@
 <?php
 
-/**
- * Created by IntelliJ IDEA.
- * User: avcherkasov
- * Date: 20/04/2017
- * Time: 13:10
- */
+
 class RBKmoney_Payform_PaymentController extends Mage_Core_Controller_Front_Action
 {
 
@@ -13,9 +8,7 @@ class RBKmoney_Payform_PaymentController extends Mage_Core_Controller_Front_Acti
      * Constants for Callback
      */
     const SIGNATURE = 'HTTP_CONTENT_SIGNATURE';
-    const SIGNATURE_ALG = 'alg';
-    const SIGNATURE_DIGEST = 'digest';
-    const SIGNATURE_PATTERN = "|alg=(\S+);\sdigest=(.*)|i";
+    const SIGNATURE_PATTERN = "/alg=(\S+);\sdigest=/";
 
     const EVENT_TYPE = 'eventType';
 
@@ -65,19 +58,16 @@ class RBKmoney_Payform_PaymentController extends Mage_Core_Controller_Front_Acti
         }
         $logs['signature'] = $_SERVER[static::SIGNATURE];
 
-        $params_signature = $this->getParametersContentSignature($_SERVER[static::SIGNATURE]);
-        if (empty($params_signature[static::SIGNATURE_ALG])) {
-            $message = 'Missing required parameter ' . static::SIGNATURE_ALG;
+        $signature = $this->getSignatureFromHeader($_SERVER[static::SIGNATURE]);
+        $logs['signature_from_header'] = $signature;
+        if (empty($signature)) {
+            $message = 'Signature is missing';
             static::outputWithExit($message, $logs);
         }
 
-        if (empty($params_signature[static::SIGNATURE_DIGEST])) {
-            $message = 'Missing required parameter ' . static::SIGNATURE_DIGEST;
-            static::outputWithExit($message, $logs);
-        }
-
-        $signature = $this->urlSafeB64decode($params_signature[static::SIGNATURE_DIGEST]);
-        if (!$this->verificationSignature($content, $signature, $payform->getCallbackPublicKey())) {
+        $signatureDecode = $this->urlSafeB64decode($signature);
+        $publicKey = $payform->getCallbackPublicKey();
+        if (!$this->verificationSignature($content, $signatureDecode, $publicKey)) {
             $message = 'Webhook notification signature mismatch';
             static::outputWithExit($message, $logs);
         }
@@ -93,7 +83,7 @@ class RBKmoney_Payform_PaymentController extends Mage_Core_Controller_Front_Acti
             }
         }
 
-        $current_shop_id = (int)$payform->getShopId();
+        $current_shop_id = $payform->getShopId();
         if ($data[static::INVOICE][static::INVOICE_SHOP_ID] != $current_shop_id) {
             $message = static::INVOICE_SHOP_ID . ' is missing';
             static::outputWithExit($message, $logs);
@@ -145,21 +135,12 @@ class RBKmoney_Payform_PaymentController extends Mage_Core_Controller_Front_Acti
 
     private function urlSafeB64decode($string)
     {
-        $data = str_replace(array('-', '_'), array('+', '/'), $string);
-        $mod4 = strlen($data) % 4;
-        if ($mod4) {
-            $data .= substr('====', $mod4);
-        }
-        return base64_decode($data);
+        return base64_decode(strtr($string, '-_,', '+/='));
     }
 
-    private function getParametersContentSignature($content_signature)
+    private function getSignatureFromHeader($content_signature)
     {
-        preg_match_all(static::SIGNATURE_PATTERN, $content_signature, $matches, PREG_PATTERN_ORDER);
-        $params = array();
-        $params[static::SIGNATURE_ALG] = !empty($matches[1][0]) ? $matches[1][0] : '';
-        $params[static::SIGNATURE_DIGEST] = !empty($matches[2][0]) ? $matches[2][0] : '';
-        return $params;
+        return preg_replace(static::SIGNATURE_PATTERN, '', $content_signature);
     }
 
     /**

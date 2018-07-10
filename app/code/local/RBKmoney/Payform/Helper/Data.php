@@ -9,7 +9,7 @@ class RBKmoney_Payform_Helper_Data extends Mage_Core_Helper_Data
      * Payment form
      */
     const PAYMENT_FORM_URL = 'https://checkout.rbk.money/checkout.js';
-    const API_URL = 'https://api.rbk.money/v1/';
+    const API_URL = 'https://api.rbk.money/v2/';
 
     /**
      * Create invoice settings
@@ -29,7 +29,6 @@ class RBKmoney_Payform_Helper_Data extends Mage_Core_Helper_Data
      */
     const SETTINGS_SHOP_ID = 'shop_id';
 
-    const SETTINGS_PAYMENT_FORM_LOGO = 'payment_form_logo';
     const SETTINGS_PAYMENT_FORM_COMPANY_NAME = 'payment_form_company_name';
     const SETTINGS_PAYMENT_FORM_BUTTON_LABEL = 'payment_form_button_label';
     const SETTINGS_PAYMENT_FORM_DESCRIPTION = 'payment_form_description';
@@ -43,7 +42,7 @@ class RBKmoney_Payform_Helper_Data extends Mage_Core_Helper_Data
 
     public function getShopId()
     {
-        return (int)Mage::getStoreConfig(static::COMMON_PATH . static::SETTINGS_SHOP_ID);
+        return trim(Mage::getStoreConfig(static::COMMON_PATH . static::SETTINGS_SHOP_ID));
     }
 
     public function getPrivateKey()
@@ -54,11 +53,6 @@ class RBKmoney_Payform_Helper_Data extends Mage_Core_Helper_Data
     public function getCallbackPublicKey()
     {
         return trim(Mage::getStoreConfig(static::COMMON_PATH . static::SETTINGS_CALLBACK_PUBLIC_KEY));
-    }
-
-    public function getPaymentFormLogo()
-    {
-        return trim(Mage::getStoreConfig(static::COMMON_PATH . static::SETTINGS_PAYMENT_FORM_LOGO));
     }
 
     public function getPaymentFormCompanyName()
@@ -96,29 +90,6 @@ class RBKmoney_Payform_Helper_Data extends Mage_Core_Helper_Data
         return Mage::getUrl('checkout/onepage/error', array('_secure' => false));
     }
 
-    /**
-     * Create invoice access token
-     *
-     * @param $invoice_id
-     *
-     * @return string
-     * @throws Exception
-     */
-    public function createInvoiceAccessToken($invoice_id)
-    {
-        $url = $this->_prepareApiUrl('processing/invoices/' . $invoice_id . '/access_tokens');
-        $response = $this->_send($url, $this->_getHeaders(), '', 'access_tokens');
-
-        if ($response['http_code'] != static::HTTP_CODE_CREATED) {
-            throw new Exception('An error occurred while creating Invoice Access Token');
-        }
-
-        $response_decode = json_decode($response['body'], true);
-        $access_token = !empty($response_decode['payload']) ? $response_decode['payload'] : '';
-
-        return $access_token;
-    }
-
 
     /**
      * Create invoice
@@ -141,7 +112,7 @@ class RBKmoney_Payform_Helper_Data extends Mage_Core_Helper_Data
         ];
 
         $url = $this->_prepareApiUrl('processing/invoices');
-        $response = $this->_send($url, $this->_getHeaders(), json_encode($data), 'init_invoice');
+        $response = $this->_send($url, $this->_getHeaders(), json_encode($data));
 
         if ($response['http_code'] != static::HTTP_CODE_CREATED) {
             $message = 'An error occurred while creating invoice';
@@ -149,9 +120,7 @@ class RBKmoney_Payform_Helper_Data extends Mage_Core_Helper_Data
         }
 
         $response_decode = json_decode($response['body'], true);
-        $invoice_id = !empty($response_decode['id']) ? $response_decode['id'] : '';
-
-        return $invoice_id;
+        return $response_decode;
     }
 
     /**
@@ -278,7 +247,8 @@ class RBKmoney_Payform_Helper_Data extends Mage_Core_Helper_Data
 
     public function log($message, $logs = array(), $level = Zend_Log::INFO, $fileName = "rbkmoney.log")
     {
-        if (!empty($this->getDebug())) {
+        $debug = $this->getDebug();
+        if (!empty($debug)) {
             Mage::log($message . ' ' . print_r($logs, true), $level, $fileName);
         }
     }
