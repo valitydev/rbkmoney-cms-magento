@@ -103,7 +103,7 @@ class RBKmoney_Payform_Helper_Data extends Mage_Core_Helper_Data
     {
         $data = [
             'shopID' => $this->getShopId(),
-            'amount' => $this->prepareAmount(number_format($order->getGrandTotal(), 2)),
+            'amount' => $this->prepareAmount(number_format($order->getGrandTotal(), 2, '.', '')),
             'metadata' => $this->_prepareMetadata($order),
             'dueDate' => $this->_prepareDueDate(),
             'currency' => $order->getBaseCurrency()->getCode(),
